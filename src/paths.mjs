@@ -105,12 +105,12 @@ function dateParts(now, timeZone) {
   };
 }
 
-// The day shift goes through the epoch so DST steps are resolved by Intl instead of by
-// arithmetic on component values.
+// The shift is calendar arithmetic on the zone's own components, so a DST step cannot
+// move the day the way a 24-hour millisecond count can.
 function formatDate(now, timeZone, dayShift) {
-  const shifted = new Date(now.getTime() + dayShift * 24 * 60 * 60 * 1000);
-  const { year, month, day } = dateParts(shifted, timeZone);
-  return `${year}-${pad(month)}-${pad(day)}`;
+  const { year, month, day } = dateParts(now, timeZone);
+  const d = new Date(Date.UTC(year, month - 1, day + dayShift));
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
 }
 
 function pad(n) {

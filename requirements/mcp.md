@@ -21,7 +21,7 @@ else from `gh auth token`.
 
 ### MCP-AUTH-002
 If no GitHub token can be obtained, then the system shall return a tool error naming both
-sources and shall not attempt any GitHub call.
+sources without attempting any GitHub call.
 - verify: test
 - tests: tests/auth.test.mjs
 
@@ -34,7 +34,7 @@ the token, never from a tool argument.
 ## GIT — how the repo is written
 
 ### MCP-GIT-001
-The system shall write every item as its own file and shall never append to a shared file.
+The system shall write every item as its own file, never appending to a shared file.
 - verify: test
 - tests: tests/paths.test.mjs
 

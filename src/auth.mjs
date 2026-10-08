@@ -12,7 +12,7 @@ export class AuthError extends Error {}
 // Source order is strict: the environment value wins when present so a per-shell
 // token overrides the gh keyring entry.
 // MCP-AUTH-001
-export function getToken({ env = process.env, exec = execFileSync } = {}) {
+export async function getToken({ env = process.env, exec = execFileSync } = {}) {
   const fromEnv = env.GITHUB_TOKEN;
   if (fromEnv) return String(fromEnv);
 

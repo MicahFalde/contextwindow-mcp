@@ -5,6 +5,16 @@ import { getToken, getLogin, AuthError } from "../src/auth.mjs";
 
 const TOKEN = "ghp_" + "a".repeat(36);
 
+// `assert.rejects` resolves to undefined, so this hands back the thrown value for inspection.
+async function capture(fn) {
+  try {
+    await fn();
+  } catch (e) {
+    return e;
+  }
+  throw new Error("expected a rejection");
+}
+
 // The exec fake plays the part of execFileSync: it answers with the raw stdout string and
 // records that it was reached at all.
 function fakeExec(stdout, calls = []) {
@@ -40,7 +50,7 @@ test("MCP-AUTH-001 falls back to `gh auth token` when GITHUB_TOKEN is unset", as
 test("MCP-AUTH-002 errors naming both sources and makes no GitHub call", async () => {
   const netCalls = [];
   const fetch = fakeFetch({}, netCalls);
-  const err = await assert.rejects(() => getToken({ env: {}, exec: fakeExec("", []) }));
+  const err = await capture(() => getToken({ env: {}, exec: fakeExec("", []) }));
   assert.ok(err instanceof AuthError);
   assert.ok(err.message.includes("GITHUB_TOKEN"), "the env source is named");
   assert.ok(err.message.includes("gh auth token"), "the cli source is named");
@@ -48,14 +58,14 @@ test("MCP-AUTH-002 errors naming both sources and makes no GitHub call", async (
 });
 
 test("MCP-AUTH-002 blank answers from both sources are as good as absent", async () => {
-  const err = await assert.rejects(
+  const err = await capture(
     () => getToken({ env: { GITHUB_TOKEN: "" }, exec: fakeExec("   ", []) }),
   );
   assert.ok(err instanceof AuthError);
 });
 
 test("MCP-AUTH-002 an empty gh answer alone still raises the auth error", async () => {
-  const err = await assert.rejects(() => getToken({ env: {}, exec: fakeExec("", []) }));
+  const err = await capture(() => getToken({ env: {}, exec: fakeExec("", []) }));
   assert.ok(err instanceof AuthError);
 });
 
@@ -77,6 +87,6 @@ test("MCP-AUTH-003 the author comes from getLogin, not from the tool args", asyn
 });
 
 test("MCP-AUTH-002 an identity response without a login is an auth error", async () => {
-  const err = await assert.rejects(() => getLogin({ token: TOKEN, fetch: fakeFetch({}) }));
+  const err = await capture(() => getLogin({ token: TOKEN, fetch: fakeFetch({}) }));
   assert.ok(err instanceof AuthError);
 });

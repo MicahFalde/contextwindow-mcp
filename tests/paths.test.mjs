@@ -85,8 +85,12 @@ test("MCP-AGENDA-002 an unset callWeekday reports the config error", () => {
 });
 
 test("MCP-AGENDA-002 the weekday and date come from the configured timezone", () => {
-  // 23:30Z on the 7th is Wednesday 13:30 in New York, so that same day is the answer.
-  assert.equal(nextCallDate(WED, new Date("2026-10-07T23:30:00Z")), "2026-10-07");
+  // 12:30Z on the 7th is Wednesday 08:30 in New York, before the 09:00 call, so that
+  // same day is the answer.
+  assert.equal(nextCallDate(WED, new Date("2026-10-07T12:30:00Z")), "2026-10-07");
+  // 23:30Z on the 7th is Wednesday 19:30 in New York, past the 09:00 call, so the next
+  // Wednesday, the 14th, answers.
+  assert.equal(nextCallDate(WED, new Date("2026-10-07T23:30:00Z")), "2026-10-14");
   // In Kiritimati the same instant is Thursday 12:30, one day ahead of the UTC date,
   // so the Wednesday of that week has already gone and the 14th answers.
   assert.equal(
@@ -102,9 +106,24 @@ test("MCP-AGENDA-002 the timezone also decides whether the call time has passed"
     nextCallDate({ callWeekday: 4, callTime: "12:00", timezone: "Pacific/Kiritimati" }, new Date("2026-10-08T22:30:00Z")),
     "2026-10-15",
   );
-  // In New York that same instant is 08:30, before the call, so the 8th still stands.
+  // In New York that same instant is Thursday 18:30, past the 12:00 call, so the 15th.
   assert.equal(
     nextCallDate({ callWeekday: 4, callTime: "12:00", timezone: NY }, new Date("2026-10-08T22:30:00Z")),
+    "2026-10-15",
+  );
+  // 14:30Z on the 8th is Thursday 10:30 in New York, before the call, so the 8th stands.
+  assert.equal(
+    nextCallDate({ callWeekday: 4, callTime: "12:00", timezone: NY }, new Date("2026-10-08T14:30:00Z")),
     "2026-10-08",
   );
+});
+
+// The DST start lands at 02:00 local, so both instants are still Saturday in the
+// call's own zone and the Saturday call date is kept.
+test("MCP-AGENDA-002 the day survives the DST step at the zone boundary", () => {
+  const cfg = { callWeekday: 0, callTime: "09:00", timezone: NY };
+  // 03:30Z is Saturday 22:30 EST, before the call, so the 8th stands.
+  assert.equal(nextCallDate(cfg, new Date("2026-03-08T03:30:00Z")), "2026-03-08");
+  // 04:30Z is Saturday 23:30 EST, still before the call, so the 8th stands.
+  assert.equal(nextCallDate(cfg, new Date("2026-03-08T04:30:00Z")), "2026-03-08");
 });
