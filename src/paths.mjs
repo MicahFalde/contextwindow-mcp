@@ -12,12 +12,17 @@ const NO_CALL_DAY =
 
 // MCP-AGENDA-005
 export function slugify(title, now = Date.now()) {
+  return `${slugBase(title)}-${base36(now, 4)}`;
+}
+
+// The base is the whole identifier for a record that is upserted by path, because a
+// timestamp suffix would move the file on every re-share and leave the old one behind.
+export function slugBase(title) {
   const collapsed = String(title)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  const cut = collapsed.slice(0, SLUG_MAX).replace(/-+$/g, "");
-  return `${cut}-${base36(now, 4)}`;
+  return collapsed.slice(0, SLUG_MAX).replace(/-+$/g, "");
 }
 
 // The id has to be unique inside one day without a second round trip, so the timestamp
