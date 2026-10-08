@@ -101,7 +101,7 @@ existing file at that path.
 
 ### MCP-PROJ-002
 When `get_projects` is called, the system shall return every project's name, author,
-status, updated date and summary, and shall not return attached files.
+status, updated date and summary, with no attached files.
 - verify: test
 - tests: tests/projects.test.mjs
 
@@ -122,7 +122,7 @@ list in the item's frontmatter.
 
 ### MCP-SHARE-002
 If a share exceeds 25 files, 250 KB in any one file, or 2 MB in total, then the system
-shall reject the whole share with an error naming the limit and shall write nothing.
+shall reject the whole share with an error naming the limit, writing nothing.
 - verify: test
 - tests: tests/shares.test.mjs
 
@@ -156,8 +156,8 @@ over 20.
 - tests: tests/scan.test.mjs
 
 ### MCP-SCAN-002
-If the scan finds a match, then the system shall reject the whole write and return the file
-path, line number and rule name for every match, and shall never return the matched value.
+If the scan finds a match, then the system shall reject the whole write with the file path,
+line number and rule name for every match, never the matched value.
 - verify: test
 - tests: tests/scan.test.mjs
 
