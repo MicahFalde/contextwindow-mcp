@@ -1,0 +1,12 @@
+{
+  "name": "@faldes/contextwindow-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for The Context Window: shared agenda, projects and code sharing backed by a private GitHub repo.",
+  "type": "module",
+  "bin": { "contextwindow-mcp": "src/index.mjs" },
+  "files": ["src"],
+  "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test tests/", "check": "REQ_DIR=requirements SRC_DIRS=src TEST_DIRS=tests scripts/check_requirements.sh" },
+  "dependencies": { "@modelcontextprotocol/sdk": "^1.32.1", "zod": "^3.25.0" },
+  "license": "MIT"
+}
