@@ -191,3 +191,13 @@ test("MCP-GIT-004 the deps client honours CONTEXTWINDOW_REPO", async () => {
   const deps = makeDeps({ GITHUB_TOKEN: TOKEN, CONTEXTWINDOW_REPO: "Someone/else" });
   assert.equal((await deps.getRepo()).repo, "Someone/else");
 });
+
+test("MCP-NFR-001 a handler called the SDK way, with request extra as the second argument, uses the registered deps", async () => {
+  const captured = {};
+  const fakeServer = { registerTool: (name, meta, handler) => { captured[name] = handler; } };
+  const bag = { getToken: async () => "t", getLogin: async () => "someone", getRepo: async () => ({ async listTree() { return []; }, async readFile() { return null; } }) };
+  registerTools(fakeServer, bag);
+  const extra = { signal: new AbortController().signal, sessionId: "s1", requestId: 7 };
+  const out = await captured.get_projects({}, extra);
+  assert.equal(out.isError, undefined, `expected success, got ${JSON.stringify(out)}`);
+});

@@ -148,8 +148,12 @@ function stampFor(...candidates) {
  *
  *  MCP-AUTH-002, MCP-SHARE-002, MCP-SHARE-005, MCP-SCAN-002 */
 function wrap(deps, handler) {
-  return async (args = {}, injected = deps) => {
-    const bag = injected ?? deps;
+  return async (args = {}, second) => {
+    // AIDEV-NOTE: SECURITY the SDK invokes handlers as (args, extra) where extra is the request
+    // context (signal, sessionId...). Only a value that quacks like a dependency bag may replace
+    // deps; treating `extra` as the bag made every live call fail with "getToken is not a function"
+    // while the unit tests, which inject a bag here, stayed green (found in the 2026-10-08 e2e).
+    const bag = second && typeof second.getToken === "function" ? second : deps;
     try {
       const now = stampFor(args?.now, bag?.now);
       return asResult(await handler(args, bag, now));
