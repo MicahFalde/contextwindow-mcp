@@ -129,11 +129,15 @@ test("MCP-AUTH-002 a missing token becomes an isError result naming both sources
   // in for the module-level fetch so the request count is observable.
   const saved = globalThis.fetch;
   globalThis.fetch = async (url) => (seen.push(url), { status: 200, json: async () => ({}) });
+  // An empty PATH so the real `gh` cannot be found: the missing-token case regardless of this machine.
+  const savedPath = process.env.PATH;
+  process.env.PATH = "";
   let out;
   try {
     out = await tools.list_agenda.handler({ week: "2026-10-07" }, { ...bag, getRepo: async () => null });
   } finally {
     globalThis.fetch = saved;
+    process.env.PATH = savedPath;
   }
   assert.equal(out.isError, true);
   assert.equal(out.content[0].text.includes("GITHUB_TOKEN"), true);

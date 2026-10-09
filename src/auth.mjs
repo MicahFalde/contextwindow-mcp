@@ -17,8 +17,16 @@ export async function getToken({ env = process.env, exec = execFileSync } = {}) 
   if (fromEnv) return String(fromEnv);
 
   // `gh` prints the token on stdout; trim because the CLI appends a newline.
-  const out = exec("gh", ["auth", "token"]);
-  const token = typeof out === "string" ? out.trim() : String(out?.stdout ?? "").trim();
+  // execFileSync returns a Buffer unless an encoding is given; the Buffer case is also handled in
+  // case an injected exec ignores the option. (Bug found by a member on first install, 2026-10-09.)
+  let out = "";
+  try {
+    out = exec("gh", ["auth", "token"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+  } catch (_) {
+    // No gh on PATH, or gh not logged in: the same two-source error below, not a raw spawn error.
+    out = "";
+  }
+  const token = (typeof out === "string" ? out : Buffer.isBuffer(out) ? out.toString("utf8") : String(out?.stdout ?? "")).trim();
   if (token) return token;
 
   // Both sources are named so the member can fix either one without a second read.

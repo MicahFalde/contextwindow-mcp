@@ -90,3 +90,11 @@ test("MCP-AUTH-002 an identity response without a login is an auth error", async
   const err = await capture(() => getLogin({ token: TOKEN, fetch: fakeFetch({}) }));
   assert.ok(err instanceof AuthError);
 });
+
+test("MCP-AUTH-001 a gh answer that arrives as a Buffer is read as the token", async () => {
+  const calls = [];
+  const exec = (cmd, args, opts) => { calls.push({ cmd, args, opts }); return Buffer.from("ghp_buffered\n"); };
+  const token = await getToken({ env: {}, exec });
+  assert.strictEqual(token, "ghp_buffered");
+  assert.strictEqual(calls[0].opts && calls[0].opts.encoding, "utf8", "the real call asks for utf8 so a string comes back");
+});
